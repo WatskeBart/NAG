@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAG (Not A Game)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .icons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .icon {
+            color: #e74c3c;
+            font-size: 40px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin: 5px;
+            user-select: none;
+        }
+
+        .messages-container {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #e74c3c;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-info {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        
+        .message-content {
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        @media (max-width: 500px) {
+            .icons-container {
+                justify-content: center;
+            }
+            
+            .icon {
+                font-size: 32px;
+            }
+        }
+
+        .game-over {
+            text-align: center;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .reset-button {
+            width: 400px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .settings-button {
+            width: 400px;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .settings-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #eee;
+            display: none;
+        }
+
+        .settings-row {
+            margin-bottom: 10px;
+        }
+
+        .settings-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .settings-row input, .settings-row select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }
+
+        .user-id-container {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>NAG (Not A Game)</h1>
+    <div class="container">
+        <div id="loadingIndicator" class="loading">Loading your data...</div>
+        
+        <div class="user-id-container">
+            User ID: <span id="userId"></span>
+            <button id="changeUserIdButton" style="margin-left: 10px; padding: 3px 8px; font-size: 12px;">Change</button>
+        </div>
+        
+        <div class="icons-container" id="icons">
+            <!-- Icons will be generated here -->
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            Game Over! Je hebt geen levens meer ☹️
+            <br><button class="reset-button" id="resetButton">Reset Game</button>
+        </div>
+        
+        <div id="settingsContainer" style="text-align: center; margin-top: 20px;">
+            <button id="settingsButton" class="settings-button">Settings</button>
+        </div>
+
+        <div id="settingsPanel" class="settings-panel">
+            <div class="settings-row">
+                <label for="iconType">Icon Type:</label>
+                <select id="iconType">
+                    <option value="❤️">Heart (❤️)</option>
+                    <option value="⭐">Star (⭐)</option>
+                    <option value="🍀">Clover (🍀)</option>
+                    <option value="🔥">Fire (🔥)</option>
+                    <option value="💎">Diamond (💎)</option>
+                    <option value="🌟">Sparkle (🌟)</option>
+                    <option value="🎮">Game (🎮)</option>
+                    <option value="🚀">Rocket (🚀)</option>
+                </select>
+            </div>
+            <div class="settings-row">
+                <label for="iconCount">Number of Icons (1-20):</label>
+                <input type="number" id="iconCount" min="1" max="20" value="7">
+            </div>
+            <div class="settings-row">
+                <button id="saveSettingsButton" class="settings-button">Save Settings</button>
+            </div>
+        </div>
+        
+        <div id="setPinContainer" style="text-align: center; margin-top: 20px;">
+            <button id="setPinButton" class="reset-button" style="background-color: #3498db;">Instellen pincode</button>
+        </div>
+
+        <div class="messages-container" id="messages">
+            <!-- Messages are displayed here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const iconsContainer = document.getElementById('icons');
+            const messagesContainer = document.getElementById('messages');
+            const gameOver = document.getElementById('gameOver');
+            const resetButton = document.getElementById('resetButton');
+            const setPinButton = document.getElementById('setPinButton');
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsPanel = document.getElementById('settingsPanel');
+            const saveSettingsButton = document.getElementById('saveSettingsButton');
+            const iconTypeSelect = document.getElementById('iconType');
+            const iconCountInput = document.getElementById('iconCount');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const userIdSpan = document.getElementById('userId');
+            const changeUserIdButton = document.getElementById('changeUserIdButton');
+            
+            // Get or set user ID
+            let userId = localStorage.getItem('nagUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('nagUserId', userId);
+            }
+            userIdSpan.textContent = userId;
+            
+            // Allow changing user ID (for testing multi-user support)
+            changeUserIdButton.addEventListener('click', function() {
+                const newUserId = prompt('Enter a new user ID:', userId);
+                if (newUserId && newUserId.trim() !== '') {
+                    userId = newUserId.trim();
+                    localStorage.setItem('nagUserId', userId);
+                    userIdSpan.textContent = userId;
+                    
+                    // Reload all data with new user ID
+                    loadSettings()
+                        .then(() => loadGameState())
+                        .then(() => checkPinStatus());
+                }
+            });
+            
+            // Default settings
+            let settings = {
+                iconType: '❤️',
+                iconCount: 7
+            };
+            
+            // Initialize application
+            initializeApp();
+            
+            // Settings button toggle
+            settingsButton.addEventListener('click', function() {
+                settingsPanel.style.display = settingsPanel.style.display === 'none' || settingsPanel.style.display === '' ? 'block' : 'none';
+            });
+            
+            // Save settings
+            saveSettingsButton.addEventListener('click', function() {
+                // Get values
+                const newIconType = iconTypeSelect.value;
+                let newIconCount = parseInt(iconCountInput.value);
+                
+                // Validate icon count
+                if (isNaN(newIconCount) || newIconCount < 1) {
+                    newIconCount = 1;
+                } else if (newIconCount > 20) {
+                    newIconCount = 20;
+                }
+                
+                // Update settings
+                settings.iconType = newIconType;
+                settings.iconCount = newIconCount;
+                
+                // Save settings to database
+                saveSettings()
+                    .then(() => {
+                        // Regenerate icons
+                        generateIcons();
+                        
+                        // Reload game state
+                        return loadGameState();
+                    })
+                    .then(() => {
+                        // Hide settings panel
+                        settingsPanel.style.display = 'none';
+
+                    })
+                    .catch(error => {
+                        console.error('Error saving settings:', error);
+                        alert('Failed to save settings. Please try again.');
+                    });
+            });
+            
+            // Set PIN functionality
+            setPinButton.addEventListener('click', function() {
+                const newPin = prompt('Enter a 4-digit PIN for reset protection:');
+                if (!newPin) return; // User canceled
+                
+                // Simple validation for 4 digits
+                if (!/^\d{4}$/.test(newPin)) {
+                    alert('Please enter exactly 4 digits.');
+                    return;
+                }
+                
+                // Save PIN to database
+                fetch(`/api/pin/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pin: newPin })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('PIN set successfully! You will need this PIN to reset the game.');
+                        
+                        // Hide the PIN button after setting PIN
+                        document.getElementById('setPinContainer').style.display = 'none';
+                    } else {
+                        alert('Failed to set PIN. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error setting PIN:', error);
+                    alert('Failed to set PIN. Please try again.');
+                });
+            });
+            
+            // Reset button functionality with PIN protection
+            resetButton.addEventListener('click', function() {
+                // First check if PIN is set
+                fetch(`/api/pin/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.hasPin) {
+                        // If no PIN is set, confirm reset
+                        if (!confirm('Are you sure you want to reset? This will clear all NAGs and messages.')) {
+                            return;
+                        }
+                        performReset();
+                    } else {
+                        // If PIN is set, verify it
+                        const enteredPin = prompt('Enter your 4-digit PIN to reset:');
+                        if (!enteredPin) return; // User canceled
+                        
+                        if (enteredPin !== data.pin) {
+                            alert('Incorrect PIN. Reset canceled.');
+                            return;
+                        }
+                        performReset();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking PIN:', error);
+                    alert('Failed to verify PIN. Please try again.');
+                });
+            });
+            
+            // Function to perform the actual reset
+            function performReset() {
+                fetch(`/api/reset/${userId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reset icon opacity
+                        const icons = document.querySelectorAll('.icon');
+                        icons.forEach(icon => {
+                            icon.style.opacity = '1';
+                        });
+                        
+                        // Clear messages
+                        messagesContainer.innerHTML = '';
+                        
+                        // Hide game over message
+                        gameOver.style.display = 'none';
+                        
+                        // Save the empty state
+                        saveGameState();
+                    } else {
+                        alert('Failed to reset game. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resetting game:', error);
+                    alert('Failed to reset game. Please try again.');
+                });
+            }
+            
+            // Initialize the application
+            function initializeApp() {
+                loadingIndicator.style.display = 'block';
+                iconsContainer.style.display = 'none';
+                
+                // Load settings first
+                loadSettings()
+                    .then(() => {
+                        // Generate icons based on loaded settings
+                        generateIcons();
+                        
+                        // Then load game state
+                        return loadGameState();
+                    })
+                    .then(() => {
+                        // Check if PIN is set
+                        return checkPinStatus();
+                    })
+                    .then(() => {
+                        // Hide loading indicator
+                        loadingIndicator.style.display = 'none';
+                        iconsContainer.style.display = 'flex';
+                    })
+                    .catch(error => {
+                        console.error('Error initializing app:', error);
+                        loadingIndicator.textContent = 'Error loading data. Please refresh the page.';
+                    });
+            }
+            
+            // Function to check PIN status
+            function checkPinStatus() {
+                return fetch(`/api/pin/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.hasPin) {
+                            document.getElementById('setPinContainer').style.display = 'none';
+                        } else {
+                            document.getElementById('setPinContainer').style.display = 'block';
+                        }
+                    });
+            }
+            
+            // Function to load settings from database
+            function loadSettings() {
+                return fetch(`/api/settings/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        settings = data;
+                        
+                        // Update input values
+                        iconTypeSelect.value = settings.iconType;
+                        iconCountInput.value = settings.iconCount;
+                    });
+            }
+            
+            // Function to save settings to database
+            function saveSettings() {
+                return fetch(`/api/settings/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                })
+                .then(response => response.json());
+            }
+            
+            // Function to generate icons based on settings
+            function generateIcons() {
+                // Clear existing icons
+                iconsContainer.innerHTML = '';
+                
+                // Create new icons
+                for (let i = 0; i < settings.iconCount; i++) {
+                    const iconElement = document.createElement('div');
+                    iconElement.className = 'icon';
+                    iconElement.dataset.index = i;
+                    iconElement.textContent = settings.iconType;
+                    
+                    // Add click event listener
+                    iconElement.addEventListener('click', handleIconClick);
+                    
+                    // Add to container
+                    iconsContainer.appendChild(iconElement);
+                }
+            }
+            
+            // Function to handle icon click
+            function handleIconClick() {
+                // Check if this icon has already been clicked (opacity < 1)
+                if (this.style.opacity === '0.2') {
+                    alert('This icon has already been used!');
+                    return;
+                }
+                
+                // Prompt for a message
+                const message = prompt('Enter your message:');
+                if (message === null) return; // User canceled
+                
+                // Decrease opacity of the clicked icon
+                this.style.opacity = '0.2';
+                
+                // Add the message to the messages container
+                addMessage(this.dataset.index, message);
+                
+                // Check if all icons have been used
+                checkGameOver();
+                
+                // Save game state
+                saveGameState();
+            }
+            
+            // Function to check if all icons have been used
+            function checkGameOver() {
+                const clickedIcons = document.querySelectorAll('.icon[style*="opacity: 0.2"]');
+                if (clickedIcons.length >= settings.iconCount) {
+                    // Show game over message if all icons have been used
+                    gameOver.style.display = 'block';
+                }
+            }
+            
+            // Function to add a message to the container
+            function addMessage(iconIndex, messageText) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                
+                const now = new Date();
+                const formattedDate = now.toLocaleString();
+                
+                messageElement.innerHTML = `
+                    <div class="message-info">
+                        NAG ${parseInt(iconIndex) + 1} • ${formattedDate}
+                    </div>
+                    <div class="message-content">
+                        ${messageText}
+                    </div>
+                `;
+                
+                messagesContainer.prepend(messageElement);
+            }
+            
+            // Function to save the game state to database
+            function saveGameState() {
+                const icons = document.querySelectorAll('.icon');
+                const state = {
+                    icons: Array.from(icons).map(icon => icon.style.opacity || '1'),
+                    messages: messagesContainer.innerHTML
+                };
+                
+                return fetch(`/api/state/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(state)
+                })
+                .then(response => response.json());
+            }
+            
+            // Function to load the game state from database
+            function loadGameState() {
+                return fetch(`/api/state/${userId}`)
+                    .then(response => response.json())
+                    .then(state => {
+                        const icons = document.querySelectorAll('.icon');
+                        
+                        // Only restore state if we have icons
+                        if (icons.length > 0 && state.icons.length > 0) {
+                            // Only apply if we have the same number of icons
+                            if (icons.length === state.icons.length) {
+                                icons.forEach((icon, index) => {
+                                    icon.style.opacity = state.icons[index] || '1';
+                                });
+                                
+                                // Restore messages
+                                messagesContainer.innerHTML = state.messages;
+                                
+                                // Check if all icons have been used
+                                checkGameOver();
+                            } else {
+                                // If the number of icons has changed, save the new state
+                                return saveGameState();
+                            }
+                        }
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
