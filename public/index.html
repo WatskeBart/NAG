@@ -22,11 +22,12 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            position: relative;
         }
 
         .icons-container {
@@ -93,7 +94,7 @@
         }
 
         .reset-button {
-            width: 400px;
+            width: 100%;
             background-color: #e74c3c;
             color: white;
             padding: 10px 20px;
@@ -105,45 +106,6 @@
             border: none;
         }
 
-        .settings-button {
-            width: 400px;
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border: none;
-        }
-
-        .settings-panel {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            border: 1px solid #eee;
-            display: none;
-        }
-
-        .settings-row {
-            margin-bottom: 10px;
-        }
-
-        .settings-row label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .settings-row input, .settings-row select {
-            width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
         .loading {
             text-align: center;
             padding: 20px;
@@ -151,11 +113,14 @@
             color: #777;
         }
 
-        .user-id-container {
-            margin-top: 10px;
-            text-align: center;
-            font-size: 14px;
-            color: #777;
+        .settings-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #3498db;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -164,10 +129,8 @@
     <div class="container">
         <div id="loadingIndicator" class="loading">Loading your data...</div>
         
-        <div class="user-id-container">
-            User ID: <span id="userId"></span>
-            <button id="changeUserIdButton" style="margin-left: 10px; padding: 3px 8px; font-size: 12px;">Change</button>
-        </div>
+        <!-- Settings gear icon -->
+        <a href="/settings" class="settings-icon" title="Settings">⚙️</a>
         
         <div class="icons-container" id="icons">
             <!-- Icons will be generated here -->
@@ -176,37 +139,6 @@
         <div class="game-over" id="gameOver">
             Game Over! Je hebt geen levens meer ☹️
             <br><button class="reset-button" id="resetButton">Reset Game</button>
-        </div>
-        
-        <div id="settingsContainer" style="text-align: center; margin-top: 20px;">
-            <button id="settingsButton" class="settings-button">Settings</button>
-        </div>
-
-        <div id="settingsPanel" class="settings-panel">
-            <div class="settings-row">
-                <label for="iconType">Icon Type:</label>
-                <select id="iconType">
-                    <option value="❤️">Heart (❤️)</option>
-                    <option value="⭐">Star (⭐)</option>
-                    <option value="🍀">Clover (🍀)</option>
-                    <option value="🔥">Fire (🔥)</option>
-                    <option value="💎">Diamond (💎)</option>
-                    <option value="🌟">Sparkle (🌟)</option>
-                    <option value="🎮">Game (🎮)</option>
-                    <option value="🚀">Rocket (🚀)</option>
-                </select>
-            </div>
-            <div class="settings-row">
-                <label for="iconCount">Number of Icons (1-20):</label>
-                <input type="number" id="iconCount" min="1" max="20" value="7">
-            </div>
-            <div class="settings-row">
-                <button id="saveSettingsButton" class="settings-button">Save Settings</button>
-            </div>
-        </div>
-        
-        <div id="setPinContainer" style="text-align: center; margin-top: 20px;">
-            <button id="setPinButton" class="reset-button" style="background-color: #3498db;">Instellen pincode</button>
         </div>
 
         <div class="messages-container" id="messages">
@@ -220,38 +152,14 @@
             const messagesContainer = document.getElementById('messages');
             const gameOver = document.getElementById('gameOver');
             const resetButton = document.getElementById('resetButton');
-            const setPinButton = document.getElementById('setPinButton');
-            const settingsButton = document.getElementById('settingsButton');
-            const settingsPanel = document.getElementById('settingsPanel');
-            const saveSettingsButton = document.getElementById('saveSettingsButton');
-            const iconTypeSelect = document.getElementById('iconType');
-            const iconCountInput = document.getElementById('iconCount');
             const loadingIndicator = document.getElementById('loadingIndicator');
-            const userIdSpan = document.getElementById('userId');
-            const changeUserIdButton = document.getElementById('changeUserIdButton');
             
-            // Get or set user ID
+            // Get user ID from localStorage
             let userId = localStorage.getItem('nagUserId');
             if (!userId) {
                 userId = 'user_' + Math.random().toString(36).substr(2, 9);
                 localStorage.setItem('nagUserId', userId);
             }
-            userIdSpan.textContent = userId;
-            
-            // Allow changing user ID (for testing multi-user support)
-            changeUserIdButton.addEventListener('click', function() {
-                const newUserId = prompt('Enter a new user ID:', userId);
-                if (newUserId && newUserId.trim() !== '') {
-                    userId = newUserId.trim();
-                    localStorage.setItem('nagUserId', userId);
-                    userIdSpan.textContent = userId;
-                    
-                    // Reload all data with new user ID
-                    loadSettings()
-                        .then(() => loadGameState())
-                        .then(() => checkPinStatus());
-                }
-            });
             
             // Default settings
             let settings = {
@@ -261,84 +169,6 @@
             
             // Initialize application
             initializeApp();
-            
-            // Settings button toggle
-            settingsButton.addEventListener('click', function() {
-                settingsPanel.style.display = settingsPanel.style.display === 'none' || settingsPanel.style.display === '' ? 'block' : 'none';
-            });
-            
-            // Save settings
-            saveSettingsButton.addEventListener('click', function() {
-                // Get values
-                const newIconType = iconTypeSelect.value;
-                let newIconCount = parseInt(iconCountInput.value);
-                
-                // Validate icon count
-                if (isNaN(newIconCount) || newIconCount < 1) {
-                    newIconCount = 1;
-                } else if (newIconCount > 20) {
-                    newIconCount = 20;
-                }
-                
-                // Update settings
-                settings.iconType = newIconType;
-                settings.iconCount = newIconCount;
-                
-                // Save settings to database
-                saveSettings()
-                    .then(() => {
-                        // Regenerate icons
-                        generateIcons();
-                        
-                        // Reload game state
-                        return loadGameState();
-                    })
-                    .then(() => {
-                        // Hide settings panel
-                        settingsPanel.style.display = 'none';
-
-                    })
-                    .catch(error => {
-                        console.error('Error saving settings:', error);
-                        alert('Failed to save settings. Please try again.');
-                    });
-            });
-            
-            // Set PIN functionality
-            setPinButton.addEventListener('click', function() {
-                const newPin = prompt('Enter a 4-digit PIN for reset protection:');
-                if (!newPin) return; // User canceled
-                
-                // Simple validation for 4 digits
-                if (!/^\d{4}$/.test(newPin)) {
-                    alert('Please enter exactly 4 digits.');
-                    return;
-                }
-                
-                // Save PIN to database
-                fetch(`/api/pin/${userId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ pin: newPin })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('PIN set successfully! You will need this PIN to reset the game.');
-                        
-                        // Hide the PIN button after setting PIN
-                        document.getElementById('setPinContainer').style.display = 'none';
-                    } else {
-                        alert('Failed to set PIN. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error setting PIN:', error);
-                    alert('Failed to set PIN. Please try again.');
-                });
-            });
             
             // Reset button functionality with PIN protection
             resetButton.addEventListener('click', function() {
@@ -417,10 +247,6 @@
                         return loadGameState();
                     })
                     .then(() => {
-                        // Check if PIN is set
-                        return checkPinStatus();
-                    })
-                    .then(() => {
                         // Hide loading indicator
                         loadingIndicator.style.display = 'none';
                         iconsContainer.style.display = 'flex';
@@ -431,42 +257,13 @@
                     });
             }
             
-            // Function to check PIN status
-            function checkPinStatus() {
-                return fetch(`/api/pin/${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.hasPin) {
-                            document.getElementById('setPinContainer').style.display = 'none';
-                        } else {
-                            document.getElementById('setPinContainer').style.display = 'block';
-                        }
-                    });
-            }
-            
             // Function to load settings from database
             function loadSettings() {
                 return fetch(`/api/settings/${userId}`)
                     .then(response => response.json())
                     .then(data => {
                         settings = data;
-                        
-                        // Update input values
-                        iconTypeSelect.value = settings.iconType;
-                        iconCountInput.value = settings.iconCount;
                     });
-            }
-            
-            // Function to save settings to database
-            function saveSettings() {
-                return fetch(`/api/settings/${userId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(settings)
-                })
-                .then(response => response.json());
             }
             
             // Function to generate icons based on settings

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAG - Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-section h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .settings-row {
+            margin-bottom: 15px;
+        }
+
+        .settings-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .settings-row input, .settings-row select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .primary-button {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background-color: #2980b9;
+        }
+
+        .danger-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .danger-button:hover {
+            background-color: #c0392b;
+        }
+
+        .home-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .home-button:hover {
+            background-color: #27ae60;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .preview-icon {
+            font-size: 36px;
+            margin: 0 5px;
+        }
+
+        .status-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>NAG Settings</h1>
+    <div class="subtitle">Configure your NAG (Not A Game) experience</div>
+    
+    <div class="container">
+        <div class="settings-section">
+            <h2>User Settings</h2>
+            <div class="settings-row">
+                <label for="userId">User ID:</label>
+                <input type="text" id="userId" readonly>
+                <button id="changeUserIdButton" class="button primary-button" style="margin-top: 10px;">Change User ID</button>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>Appearance</h2>
+            <div class="settings-row">
+                <label for="iconType">Icon Type:</label>
+                <select id="iconType">
+                    <option value="❤️">Heart (❤️)</option>
+                    <option value="⭐">Star (⭐)</option>
+                    <option value="🍀">Clover (🍀)</option>
+                    <option value="🔥">Fire (🔥)</option>
+                    <option value="💎">Diamond (💎)</option>
+                    <option value="🌟">Sparkle (🌟)</option>
+                    <option value="🎮">Game (🎮)</option>
+                    <option value="🚀">Rocket (🚀)</option>
+                </select>
+            </div>
+            <div class="settings-row">
+                <label for="iconCount">Number of Icons (1-20):</label>
+                <input type="number" id="iconCount" min="1" max="20" value="7">
+            </div>
+            <div class="preview-container" id="iconPreview">
+                <!-- Icon preview will be generated here -->
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>Security</h2>
+            <div class="settings-row">
+                <label for="pinStatus">PIN Status:</label>
+                <div id="pinStatus">No PIN set</div>
+                <button id="setPinButton" class="button primary-button" style="margin-top: 10px;">Set PIN</button>
+                <button id="changePinButton" class="button primary-button" style="margin-top: 10px; display: none;">Change PIN</button>
+                <button id="removePinButton" class="button danger-button" style="margin-top: 10px; display: none;">Remove PIN</button>
+            </div>
+        </div>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <button id="saveSettingsButton" class="button primary-button">Save All Settings</button>
+        <button id="homeButton" class="button home-button" style="margin-top: 15px;">Return to NAG</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userIdInput = document.getElementById('userId');
+            const changeUserIdButton = document.getElementById('changeUserIdButton');
+            const iconTypeSelect = document.getElementById('iconType');
+            const iconCountInput = document.getElementById('iconCount');
+            const iconPreview = document.getElementById('iconPreview');
+            const setPinButton = document.getElementById('setPinButton');
+            const changePinButton = document.getElementById('changePinButton');
+            const removePinButton = document.getElementById('removePinButton');
+            const pinStatusDiv = document.getElementById('pinStatus');
+            const saveSettingsButton = document.getElementById('saveSettingsButton');
+            const homeButton = document.getElementById('homeButton');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Get user ID from localStorage
+            let userId = localStorage.getItem('nagUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('nagUserId', userId);
+            }
+            userIdInput.value = userId;
+            
+            // Default settings
+            let settings = {
+                iconType: '❤️',
+                iconCount: 7
+            };
+            
+            // Initialize settings page
+            initializeSettings();
+            
+            // Load settings and update UI
+            function initializeSettings() {
+                // Load settings
+                loadSettings()
+                    .then(() => {
+                        // Update UI with loaded settings
+                        iconTypeSelect.value = settings.iconType;
+                        iconCountInput.value = settings.iconCount;
+                        
+                        // Generate icon preview
+                        updateIconPreview();
+                    })
+                    .then(() => {
+                        // Check PIN status
+                        return checkPinStatus();
+                    })
+                    .catch(error => {
+                        console.error('Error initializing settings:', error);
+                        showStatusMessage('Error loading settings. Please try again.', false);
+                    });
+            }
+            
+            // Function to load settings from database
+            function loadSettings() {
+                return fetch(`/api/settings/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        settings = data;
+                    });
+            }
+            
+            // Function to save settings to database
+            function saveSettings() {
+                const newSettings = {
+                    iconType: iconTypeSelect.value,
+                    iconCount: parseInt(iconCountInput.value)
+                };
+                
+                // Validate icon count
+                if (isNaN(newSettings.iconCount) || newSettings.iconCount < 1) {
+                    newSettings.iconCount = 1;
+                } else if (newSettings.iconCount > 20) {
+                    newSettings.iconCount = 20;
+                }
+                
+                return fetch(`/api/settings/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newSettings)
+                })
+                .then(response => response.json());
+            }
+            
+            // Function to check PIN status
+            function checkPinStatus() {
+                return fetch(`/api/pin/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.hasPin) {
+                            pinStatusDiv.textContent = 'PIN is set';
+                            setPinButton.style.display = 'none';
+                            changePinButton.style.display = 'block';
+                            removePinButton.style.display = 'block';
+                        } else {
+                            pinStatusDiv.textContent = 'No PIN set';
+                            setPinButton.style.display = 'block';
+                            changePinButton.style.display = 'none';
+                            removePinButton.style.display = 'none';
+                        }
+                    });
+            }
+            
+            // Function to update icon preview
+            function updateIconPreview() {
+                iconPreview.innerHTML = '';
+                
+                const iconType = iconTypeSelect.value;
+                let iconCount = parseInt(iconCountInput.value);
+                
+                // Validate icon count
+                if (isNaN(iconCount) || iconCount < 1) {
+                    iconCount = 1;
+                } else if (iconCount > 20) {
+                    iconCount = 20;
+                }
+                
+                // Show up to 5 icons in the preview
+                const previewCount = Math.min(iconCount, 5);
+                
+                for (let i = 0; i < previewCount; i++) {
+                    const previewIcon = document.createElement('div');
+                    previewIcon.className = 'preview-icon';
+                    previewIcon.textContent = iconType;
+                    iconPreview.appendChild(previewIcon);
+                }
+                
+                if (iconCount > 5) {
+                    const moreIndicator = document.createElement('div');
+                    moreIndicator.textContent = '...';
+                    moreIndicator.style.fontSize = '24px';
+                    moreIndicator.style.margin = '0 5px';
+                    iconPreview.appendChild(moreIndicator);
+                }
+            }
+            
+            // Function to show status message
+            function showStatusMessage(message, isSuccess) {
+                statusMessage.textContent = message;
+                statusMessage.className = isSuccess ? 'status-message success' : 'status-message error';
+                statusMessage.style.display = 'block';
+                
+                // Hide message after 3 seconds
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            // Event Listeners
+            
+            // Change User ID button
+            changeUserIdButton.addEventListener('click', function() {
+                const newUserId = prompt('Enter a new user ID:', userId);
+                if (newUserId && newUserId.trim() !== '') {
+                    userId = newUserId.trim();
+                    localStorage.setItem('nagUserId', userId);
+                    userIdInput.value = userId;
+                    
+                    // Reload settings with new user ID
+                    initializeSettings();
+                    
+                    showStatusMessage('User ID changed successfully!', true);
+                }
+            });
+            
+            // Update preview when icon type changes
+            iconTypeSelect.addEventListener('change', updateIconPreview);
+            
+            // Update preview when icon count changes
+            iconCountInput.addEventListener('input', updateIconPreview);
+            
+            // Set PIN button
+            setPinButton.addEventListener('click', function() {
+                const newPin = prompt('Enter a 4-digit PIN for reset protection:');
+                if (!newPin) return; // User canceled
+                
+                // Simple validation for 4 digits
+                if (!/^\d{4}$/.test(newPin)) {
+                    showStatusMessage('PIN must be exactly 4 digits.', false);
+                    return;
+                }
+                
+                // Save PIN to database
+                fetch(`/api/pin/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pin: newPin })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showStatusMessage('PIN set successfully!', true);
+                        checkPinStatus();
+                    } else {
+                        showStatusMessage('Failed to set PIN. Please try again.', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error setting PIN:', error);
+                    showStatusMessage('Failed to set PIN. Please try again.', false);
+                });
+            });
+            
+            // Change PIN button
+            changePinButton.addEventListener('click', function() {
+                fetch(`/api/pin/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.hasPin) {
+                        showStatusMessage('No PIN is set. Please set a PIN first.', false);
+                        return;
+                    }
+                    
+                    const currentPin = prompt('Enter your current PIN:');
+                    if (!currentPin) return; // User canceled
+                    
+                    if (currentPin !== data.pin) {
+                        showStatusMessage('Incorrect PIN. Cannot change PIN.', false);
+                        return;
+                    }
+                    
+                    const newPin = prompt('Enter a new 4-digit PIN:');
+                    if (!newPin) return; // User canceled
+                    
+                    // Simple validation for 4 digits
+                    if (!/^\d{4}$/.test(newPin)) {
+                        showStatusMessage('PIN must be exactly 4 digits.', false);
+                        return;
+                    }
+                    
+                    // Save new PIN to database
+                    fetch(`/api/pin/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ pin: newPin })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStatusMessage('PIN changed successfully!', true);
+                        } else {
+                            showStatusMessage('Failed to change PIN. Please try again.', false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error changing PIN:', error);
+                        showStatusMessage('Failed to change PIN. Please try again.', false);
+                    });
+                });
+            });
+            
+            // Remove PIN button
+            removePinButton.addEventListener('click', function() {
+                fetch(`/api/pin/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.hasPin) {
+                        showStatusMessage('No PIN is set.', false);
+                        return;
+                    }
+                    
+                    const currentPin = prompt('Enter your PIN to remove it:');
+                    if (!currentPin) return; // User canceled
+                    
+                    if (currentPin !== data.pin) {
+                        showStatusMessage('Incorrect PIN. Cannot remove PIN.', false);
+                        return;
+                    }
+                    
+                    // Remove PIN (set to empty string)
+                    fetch(`/api/pin/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ pin: '' })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStatusMessage('PIN removed successfully!', true);
+                            checkPinStatus();
+                        } else {
+                            showStatusMessage('Failed to remove PIN. Please try again.', false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing PIN:', error);
+                        showStatusMessage('Failed to remove PIN. Please try again.', false);
+                    });
+                });
+            });
+            
+            // Save Settings button
+            saveSettingsButton.addEventListener('click', function() {
+                const newIconType = iconTypeSelect.value;
+                let newIconCount = parseInt(iconCountInput.value);
+                
+                // Validate icon count
+                if (isNaN(newIconCount) || newIconCount < 1) {
+                    newIconCount = 1;
+                    iconCountInput.value = '1';
+                } else if (newIconCount > 20) {
+                    newIconCount = 20;
+                    iconCountInput.value = '20';
+                }
+                
+                // Update settings
+                settings.iconType = newIconType;
+                settings.iconCount = newIconCount;
+                
+                // Save settings to database
+                saveSettings()
+                    .then(data => {
+                        if (data.success) {
+                            showStatusMessage('Settings saved successfully!', true);
+                        } else {
+                            showStatusMessage('Failed to save settings. Please try again.', false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving settings:', error);
+                        showStatusMessage('Failed to save settings. Please try again.', false);
+                    });
+            });
+            
+            // Home button
+            homeButton.addEventListener('click', function() {
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>

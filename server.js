@@ -42,6 +42,15 @@ const deleteState = db.prepare('DELETE FROM nag_state WHERE user_id = ?');
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve HTML files
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/settings', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'settings.html'));
+});
+
 // API endpoints
 
 // Get settings
